@@ -1,71 +1,86 @@
-import Bot from "../models/bot.model.js";
-import User from "../models/user.model.js";
+import Conversation from "../models/conversation.model.js";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import dotenv from "dotenv";
 
-export const Message=async(req,res)=>{
-   try {
-    const {text}=req.body;
- 
-    if(!text?.trim()){
-        return res.status(400).json({error:"Text cannot be empty"});
+dotenv.config();
+
+// Initialize Gemini API
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+// Predefined responses
+const predefinedResponses = {
+  "who created you?": "I was created by Nova AI team 🤖💻",
+  "what is your name?": "I'm Chatboat, your friendly AI assistant 🛳️🤖",
+  "how are you?": "I'm doing great! Thanks for asking 😄",
+  "what can you do?": "I can chat with you, answer questions, and help with tasks! 🧠✨"
+};
+
+export const Message = async (req, res) => {
+  try {
+    const { text, conversationId } = req.body;
+
+    if (!text || !text.trim()) {
+      return res.status(400).json({ success: false, error: "Message text cannot be empty" });
     }
 
-    const user=await User.create({
-        sender:"user",
-        text
-    })
+    console.log("📩 User input:", text);
 
-    // Data
-    const botResponses={
-  "hello": "Hi, How I can help you!!",
-  "can we become friend": "Yes",
-  "how are you": "I'm just a bot, but I'm doing great! How about you?",
-  "what is your name?": "I’m ChatBot, your virtual assistant.",
-  "who made you": "I was created by developers to help answer your questions.",
-  "tell me a joke": "Why don’t skeletons fight each other? They don’t have the guts!",
-  "what is the time": "I can’t see a clock, but your device should know.",
-  "bye": "Goodbye! Have a great day.",
-  "thank you": "You’re welcome!",
-  "i love you": "That’s sweet! I’m here to help you anytime.",
-  "where are you from": "I live in the cloud — no rent, no bills!",
-  "what can you do": "I can chat with you, answer questions, and keep you company.",
+    let botResponse = "";
+    const lowerText = text.trim().toLowerCase();
 
- "what is python": "Python is a high-level, interpreted programming language known for simplicity and versatility.\n• Easy to read/write due to clean syntax (similar to English)\n• Dynamically typed and supports multiple paradigms (OOP, functional, procedural)\n• Extensive libraries for AI, data science, web, automation\n• Example: Used in Google, YouTube, Instagram, and machine learning applications",
+    // Check predefined responses first
+    if (predefinedResponses[lowerText]) {
+      botResponse = predefinedResponses[lowerText];
+    } else {
+      // Call Gemini API
+      try {
+        const result = await model.generateContent(text);
+        botResponse = result?.response?.text() || "Sorry, I couldn’t generate a response.";
+      } catch (err) {
+        console.error("⚠️ Gemini API Error:", err);
+        botResponse = "⚠️ Error fetching response from AI.";
+      }
+    }
 
-"what is java": "Java is a platform-independent, object-oriented programming language.\n• Famous for 'Write Once, Run Anywhere' due to JVM (Java Virtual Machine)\n• Used in enterprise systems, Android development, cloud apps\n• Provides features like garbage collection, strong memory management\n• Example: Banking systems, Android apps, large-scale enterprise applications",
+    let conversation;
 
-"what is recursion": "Recursion is when a function calls itself to solve smaller parts of a problem.\n• Useful for problems that can be divided into subproblems (divide-and-conquer)\n• Requires a **base condition** to stop infinite looping\n• Commonly used in: factorial calculation, Fibonacci sequence, tree/graph traversal\n• Example in coding interview: 'Write a recursive function to reverse a linked list'",
+    if (conversationId) {
+      // Update existing conversation
+      conversation = await Conversation.findById(conversationId);
+      if (!conversation) {
+        return res.status(404).json({ success: false, error: "Conversation not found" });
+      }
 
-"who is prime minister of india?": "Narendra Modi is the Prime Minister of India since May 2014.\n• Belongs to Bharatiya Janata Party (BJP)\n• Represents Varanasi constituency\n• Key initiatives: Digital India, Startup India, Swachh Bharat, Make in India\n• Interview Tip: Link to governance or technology (e.g., Digital India impact on IT industry)",
+      conversation.messages.push(
+        { sender: "user", text: text.trim() },
+        { sender: "bot", text: botResponse }
+      );
+    } else {
+      // Create new conversation
+      conversation = new Conversation({
+        messages: [
+          { sender: "user", text: text.trim() },
+          { sender: "bot", text: botResponse },
+        ],
+      });
+    }
 
-"what is g20": "The G20 (Group of Twenty) is an intergovernmental forum of 19 countries + the European Union.\n• Founded in 1999 to address global financial stability\n• Members include India, USA, China, Japan, EU, etc.\n• Discusses economic growth, climate change, sustainable development\n• Recent: India hosted G20 summit in 2023",
+    await conversation.save();
 
-"tell me about yourself": "This is usually the first interview question.\nStructure:\n• Start with a brief intro (name, background, education/work)\n• Highlight your skills (technical + soft skills)\n• Share achievements (projects, internships, leadership roles)\n• Conclude with why you’re excited about this role\nExample: 'I am a Computer Science graduate skilled in Python and SQL. I completed an internship at XYZ where I optimized a database query, improving performance by 30%. I’m passionate about problem-solving and eager to contribute to your team’s success.'",
+    // Return only the latest bot message to avoid sending full conversation each time
+    return res.status(200).json({
+      success: true,
+      conversationId: conversation._id,
+      botMessage: botResponse
+    });
 
-"why should we hire you": "HR wants to see your value-add.\n• Emphasize skills that match job requirements\n• Show enthusiasm and cultural fit\n• Example: 'I bring strong coding skills in Python and SQL, along with problem-solving ability proven through hackathons. I am also a quick learner and adapt well to team environments. I believe I can contribute to both technical delivery and innovative ideas.'",
-
-"what is leadership": "Leadership is the ability to inspire and guide others toward achieving goals.\n• Key traits: vision, communication, accountability, decision-making\n• Example in interview: 'I led a college project team of 4, where I divided tasks, coordinated communication, and ensured deadlines. We successfully delivered a working prototype before schedule.'",
-
-"who is virat kohli": "Virat Kohli is one of India’s greatest batsmen and former captain.\n• Known for consistency, fitness, and aggressive play\n• Holds record for fastest century in ODIs for India\n• Nicknamed 'Chase Master' for his performance in run-chases\n• Interview Tip: If asked about sports management, relate his discipline & fitness to leadership skills",
-
-"what is ipl": "The Indian Premier League (IPL) is a professional T20 cricket league started in 2008.\n• Played annually in India, franchise-based teams\n• Combines cricket + entertainment (biggest sports league in India)\n• Significant for sports business, sponsorships, brand endorsements\n• Example: Chennai Super Kings (CSK) & Mumbai Indians (MI) are top teams"
-
-
-}
-
-const normalizedText = text.toLowerCase().trim();
-
-const botResponse = botResponses[normalizedText] || "Sorry, I don't understand the question!!!";
-
-const bot = await Bot.create({
-    text: botResponse
-})
-
-return res.status(200).json({
-    userMessage:user.text,
-    botMessage:bot.text,
-})
-   } catch (error) {
-    console.log("Error in Message Controller:", error);
-    return res.status(500).json({error:"Internal Server Error"});
-   }
-}
+  } catch (error) {
+    console.error("❌ Error in Message Controller:", error);
+    return res.status(500).json({
+      success: false,
+      error: "Internal Server Error",
+      details: error.message
+    });
+  }
+};
