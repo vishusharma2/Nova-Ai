@@ -84,30 +84,6 @@ class UserController {
     }
   }
 
-  // Get current user
-  static async getMe(req, res) {
-    try {
-      const user = await User.findById(req.user.id);
-      if (!user) return res.status(404).json({ success: false, message: 'User not found' });
-
-      res.status(200).json({
-        success: true,
-        user: {
-          id: user._id,
-          username: user.username,
-          email: user.email,
-          useCase: user.useCase,
-          experience: user.experience,
-          preferences: user.preferences,
-          createdAt: user.createdAt,
-        }
-      });
-    } catch (err) {
-      console.error('Get profile error:', err);
-      res.status(500).json({ success: false, message: 'Internal server error' });
-    }
-  }
-
   // Logout
   static async logout(req, res) {
     res.status(200).json({ success: true, message: 'Logged out successfully' });
