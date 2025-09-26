@@ -51,9 +51,8 @@ export default function ChatbotLoginPage() {
           <div className="backdrop-blur-xl bg-white/10 rounded-3xl border border-white/20 shadow-2xl p-8 transform transition-all duration-300 hover:scale-105 hover:bg-white/15">
             {/* Header */}
             <div className="text-center mb-8">
-              <div className="w-24 h-24 bg-gradient-to-r from-purple-500 via-cyan-500 to-blue-500 rounded-2xl mx-auto mb-6 flex items-center justify-center relative overflow-hidden">
-                <Bot className="w-12 h-12 text-white relative z-10" />
-                <Sparkles className="absolute top-2 right-2 w-4 h-4 text-yellow-300 animate-pulse" />
+              <div className="w-24 h-24 bg-gradient-to-r  rounded-2xl mx-auto mb-6 flex items-center justify-center relative overflow-hidden">
+                <img src="logo.png" alt="logo" />
               </div>
               <h1 className="text-4xl font-bold bg-gradient-to-r from-white via-cyan-200 to-purple-200 bg-clip-text text-transparent mb-2">
                 Welcome Back

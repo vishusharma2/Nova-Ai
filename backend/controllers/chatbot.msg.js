@@ -22,7 +22,12 @@ const isAskingAboutModelCreator = (text) => {
     lowerText.includes("who programmed you") ||
     lowerText.includes("created by") ||
     lowerText.includes("made by") ||
-    lowerText.includes("developed by")
+    lowerText.includes("developed by") ||
+    lowerText.includes("aapko kisne bnaya hai?")||
+    lowerText.includes("aapko kisne bnaya hai ?")||
+    lowerText.includes("aap ko bnane wala kon hai ?")||
+    lowerText.includes("aap ko bnane wala kon hai?")
+
   );
 };
 

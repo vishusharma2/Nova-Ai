@@ -107,12 +107,11 @@ export default function ChatbotSignupPage() {
 
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="w-24 h-24 bg-gradient-to-r from-purple-500 via-cyan-500 to-blue-500 rounded-2xl mx-auto mb-6 flex items-center justify-center relative overflow-hidden">
-              <Bot className="w-12 h-12 text-white z-10" />
-              <Sparkles className="absolute top-2 right-2 w-4 h-4 text-yellow-300 animate-pulse" />
+            <div className="w-24 h-24 rounded-2xl mx-auto mb-6 flex items-center justify-center relative overflow-hidden">
+              <img src="logo.png" alt="logo" />
             </div>
             <h1 className="text-4xl font-bold bg-gradient-to-r from-white via-cyan-200 to-purple-200 bg-clip-text text-transparent mb-2">
-              Join AI Chat
+              Join Nova AI
             </h1>
             <p className="text-white/70 text-lg flex items-center justify-center gap-2">
               <Brain className="w-5 h-5" />
