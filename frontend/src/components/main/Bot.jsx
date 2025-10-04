@@ -4,7 +4,7 @@ import Navbar from "./Navbar";
 import Footer from "./Footer";
 import ChatArea from "./ChatArea";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4002";
+const API_URL = import.meta.env.VITE_API_URL || "http://13.203.218.106:4002";
 
 function Bot() {
   const [messages, setMessages] = useState([]);

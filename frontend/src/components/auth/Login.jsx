@@ -1,5 +1,14 @@
 import { useState } from "react";
-import { Eye, EyeOff, Mail, Lock, ArrowRight, Bot, Sparkles, Brain } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  Mail,
+  Lock,
+  ArrowRight,
+  Bot,
+  Sparkles,
+  Brain,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function ChatbotLoginPage() {
@@ -10,7 +19,7 @@ export default function ChatbotLoginPage() {
   const navigate = useNavigate();
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = async () => {
@@ -18,10 +27,10 @@ export default function ChatbotLoginPage() {
     setError("");
 
     try {
-      const res = await fetch("http://localhost:4002/api/auth/login", {
+      const res = await fetch("http://13.203.218.106:4002/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
 
       const data = await res.json();
@@ -65,7 +74,9 @@ export default function ChatbotLoginPage() {
 
             {/* Error Message */}
             {error && (
-              <div className="text-red-400 bg-red-900/30 p-2 mb-4 rounded">{error}</div>
+              <div className="text-red-400 bg-red-900/30 p-2 mb-4 rounded">
+                {error}
+              </div>
             )}
 
             {/* Form */}
@@ -93,7 +104,9 @@ export default function ChatbotLoginPage() {
                 <input
                   type={showPassword ? "text" : "password"}
                   value={formData.password}
-                  onChange={(e) => handleInputChange("password", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("password", e.target.value)
+                  }
                   placeholder="Enter your password"
                   className="w-full pl-12 pr-12 py-4 bg-white/10 border border-white/20 rounded-2xl text-white placeholder-white/50 focus:outline-none focus:border-cyan-400 focus:bg-white/20 transition-all duration-300 backdrop-blur-sm focus:shadow-cyan-500/20 focus:shadow-lg"
                   required
@@ -103,7 +116,11 @@ export default function ChatbotLoginPage() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 pr-4 flex items-center text-white/50 hover:text-cyan-300 transition-colors"
                 >
-                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
                 </button>
               </div>
 
@@ -132,7 +149,10 @@ export default function ChatbotLoginPage() {
             <div className="mt-8 text-center">
               <p className="text-white/70">
                 New here?{" "}
-                <a href="/signup" className="text-cyan-300 hover:text-cyan-200 font-semibold transition-colors">
+                <a
+                  href="/signup"
+                  className="text-cyan-300 hover:text-cyan-200 font-semibold transition-colors"
+                >
                   Create account
                 </a>
               </p>

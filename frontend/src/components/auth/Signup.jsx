@@ -1,6 +1,19 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Eye, EyeOff, Mail, Lock, User, Bot, MessageCircle, ArrowRight, Check, Brain, Zap, Sparkles } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  Mail,
+  Lock,
+  User,
+  Bot,
+  MessageCircle,
+  ArrowRight,
+  Check,
+  Brain,
+  Zap,
+  Sparkles,
+} from "lucide-react";
 
 export default function ChatbotSignupPage() {
   const navigate = useNavigate();
@@ -13,7 +26,7 @@ export default function ChatbotSignupPage() {
     password: "",
     confirmPassword: "",
     useCase: "",
-    experience: ""
+    experience: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
@@ -27,18 +40,18 @@ export default function ChatbotSignupPage() {
     "Content Creation",
     "Research & Learning",
     "Creative Writing",
-    "Other"
+    "Other",
   ];
 
   const experienceLevels = [
     "New to AI",
     "Some Experience",
     "Advanced User",
-    "AI Developer"
+    "AI Developer",
   ];
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = async () => {
@@ -46,7 +59,9 @@ export default function ChatbotSignupPage() {
     setSuccessMessage("");
 
     if (!agreedToTerms) {
-      setErrorMessage("You must agree to the Terms of Service and AI Usage Policy.");
+      setErrorMessage(
+        "You must agree to the Terms of Service and AI Usage Policy."
+      );
       return;
     }
 
@@ -55,7 +70,12 @@ export default function ChatbotSignupPage() {
       return;
     }
 
-    if (!formData.username || !formData.email || !formData.useCase || !formData.experience) {
+    if (
+      !formData.username ||
+      !formData.email ||
+      !formData.useCase ||
+      !formData.experience
+    ) {
       setErrorMessage("Please fill in all required fields!");
       return;
     }
@@ -63,7 +83,7 @@ export default function ChatbotSignupPage() {
     setIsLoading(true);
 
     try {
-      const res = await fetch("http://localhost:4002/api/auth/signup", {
+      const res = await fetch("http://13.203.218.106:4002/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -71,8 +91,8 @@ export default function ChatbotSignupPage() {
           email: formData.email,
           password: formData.password,
           useCase: formData.useCase,
-          experience: formData.experience
-        })
+          experience: formData.experience,
+        }),
       });
 
       const data = await res.json();
@@ -85,7 +105,7 @@ export default function ChatbotSignupPage() {
           password: "",
           confirmPassword: "",
           useCase: "",
-          experience: ""
+          experience: "",
         });
         // Redirect to login after 2s
         setTimeout(() => navigate("/login"), 2000);
@@ -104,7 +124,6 @@ export default function ChatbotSignupPage() {
     <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-slate-900 via-purple-900 to-slate-800 flex items-center justify-center p-4">
       <div className="relative w-full max-w-lg">
         <div className="backdrop-blur-xl bg-white/10 rounded-3xl border border-white/20 shadow-2xl p-8 transform transition-all duration-300 hover:scale-[1.02] hover:bg-white/15">
-
           {/* Header */}
           <div className="text-center mb-8">
             <div className="w-24 h-24 rounded-2xl mx-auto mb-6 flex items-center justify-center relative overflow-hidden">
@@ -124,7 +143,9 @@ export default function ChatbotSignupPage() {
             <div className="mb-4 text-red-400 font-medium">{errorMessage}</div>
           )}
           {successMessage && (
-            <div className="mb-4 text-green-400 font-medium">{successMessage}</div>
+            <div className="mb-4 text-green-400 font-medium">
+              {successMessage}
+            </div>
           )}
 
           {/* Form */}
@@ -159,45 +180,59 @@ export default function ChatbotSignupPage() {
               />
             </div>
 
-           {/* Use Case Dropdown */}
-              <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
-                  <MessageCircle className="h-5 w-5 text-white/50 group-focus-within:text-cyan-300 transition-colors" />
-                </div>
-                <select
-                  value={formData.useCase}
-                  onChange={(e) => handleInputChange('useCase', e.target.value)}
-                  className="w-full pl-12 pr-4 py-4 bg-white/10 border border-white/20 rounded-2xl text-white focus:outline-none focus:border-cyan-400 focus:bg-white/20 transition-all duration-300 backdrop-blur-sm focus:shadow-cyan-500/20 focus:shadow-lg appearance-none cursor-pointer"
-                  required
-                >
-                  <option value="" className="bg-slate-800 text-white">What will you use the chatbot for?</option>
-                  {useCases.map((useCase) => (
-                    <option key={useCase} value={useCase} className="bg-slate-800 text-white">
-                      {useCase}
-                    </option>
-                  ))}
-                </select>
+            {/* Use Case Dropdown */}
+            <div className="relative group">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
+                <MessageCircle className="h-5 w-5 text-white/50 group-focus-within:text-cyan-300 transition-colors" />
               </div>
+              <select
+                value={formData.useCase}
+                onChange={(e) => handleInputChange("useCase", e.target.value)}
+                className="w-full pl-12 pr-4 py-4 bg-white/10 border border-white/20 rounded-2xl text-white focus:outline-none focus:border-cyan-400 focus:bg-white/20 transition-all duration-300 backdrop-blur-sm focus:shadow-cyan-500/20 focus:shadow-lg appearance-none cursor-pointer"
+                required
+              >
+                <option value="" className="bg-slate-800 text-white">
+                  What will you use the chatbot for?
+                </option>
+                {useCases.map((useCase) => (
+                  <option
+                    key={useCase}
+                    value={useCase}
+                    className="bg-slate-800 text-white"
+                  >
+                    {useCase}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-              {/* Experience Level */}
-              <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
-                  <Zap className="h-5 w-5 text-white/50 group-focus-within:text-cyan-300 transition-colors" />
-                </div>
-                <select
-                  value={formData.experience}
-                  onChange={(e) => handleInputChange('experience', e.target.value)}
-                  className="w-full pl-12 pr-4 py-4 bg-white/10 border border-white/20 rounded-2xl text-white focus:outline-none focus:border-cyan-400 focus:bg-white/20 transition-all duration-300 backdrop-blur-sm focus:shadow-cyan-500/20 focus:shadow-lg appearance-none cursor-pointer"
-                  required
-                >
-                  <option value="" className="bg-slate-800 text-white">Your AI experience level?</option>
-                  {experienceLevels.map((level) => (
-                    <option key={level} value={level} className="bg-slate-800 text-white">
-                      {level}
-                    </option>
-                  ))}
-                </select>
+            {/* Experience Level */}
+            <div className="relative group">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
+                <Zap className="h-5 w-5 text-white/50 group-focus-within:text-cyan-300 transition-colors" />
               </div>
+              <select
+                value={formData.experience}
+                onChange={(e) =>
+                  handleInputChange("experience", e.target.value)
+                }
+                className="w-full pl-12 pr-4 py-4 bg-white/10 border border-white/20 rounded-2xl text-white focus:outline-none focus:border-cyan-400 focus:bg-white/20 transition-all duration-300 backdrop-blur-sm focus:shadow-cyan-500/20 focus:shadow-lg appearance-none cursor-pointer"
+                required
+              >
+                <option value="" className="bg-slate-800 text-white">
+                  Your AI experience level?
+                </option>
+                {experienceLevels.map((level) => (
+                  <option
+                    key={level}
+                    value={level}
+                    className="bg-slate-800 text-white"
+                  >
+                    {level}
+                  </option>
+                ))}
+              </select>
+            </div>
 
             {/* Password */}
             <div className="space-y-4">
@@ -208,7 +243,9 @@ export default function ChatbotSignupPage() {
                 <input
                   type={showPassword ? "text" : "password"}
                   value={formData.password}
-                  onChange={(e) => handleInputChange("password", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("password", e.target.value)
+                  }
                   placeholder="Create password"
                   className="w-full pl-12 pr-12 py-4 bg-white/10 border border-white/20 rounded-2xl text-white placeholder-white/50 focus:outline-none focus:border-cyan-400 focus:bg-white/20 transition-all duration-300 backdrop-blur-sm focus:shadow-cyan-500/20 focus:shadow-lg"
                   required
@@ -218,7 +255,11 @@ export default function ChatbotSignupPage() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 pr-4 flex items-center text-white/50 hover:text-cyan-300 transition-colors"
                 >
-                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
                 </button>
               </div>
 
@@ -229,7 +270,9 @@ export default function ChatbotSignupPage() {
                 <input
                   type={showConfirmPassword ? "text" : "password"}
                   value={formData.confirmPassword}
-                  onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("confirmPassword", e.target.value)
+                  }
                   placeholder="Confirm password"
                   className="w-full pl-12 pr-12 py-4 bg-white/10 border border-white/20 rounded-2xl text-white placeholder-white/50 focus:outline-none focus:border-cyan-400 focus:bg-white/20 transition-all duration-300 backdrop-blur-sm focus:shadow-cyan-500/20 focus:shadow-lg"
                   required
@@ -239,7 +282,11 @@ export default function ChatbotSignupPage() {
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="absolute inset-y-0 right-0 pr-4 flex items-center text-white/50 hover:text-cyan-300 transition-colors"
                 >
-                  {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  {showConfirmPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
                 </button>
               </div>
             </div>
@@ -254,8 +301,13 @@ export default function ChatbotSignupPage() {
               />
               <label className="text-white/70 text-sm">
                 I agree to the{" "}
-                <a href="#" className="text-cyan-300 font-medium">Terms of Service</a> and{" "}
-                <a href="#" className="text-cyan-300 font-medium">AI Usage Policy</a>
+                <a href="#" className="text-cyan-300 font-medium">
+                  Terms of Service
+                </a>{" "}
+                and{" "}
+                <a href="#" className="text-cyan-300 font-medium">
+                  AI Usage Policy
+                </a>
               </label>
             </div>
 
@@ -282,7 +334,10 @@ export default function ChatbotSignupPage() {
             {/* Login Link */}
             <p className="mt-6 text-center text-white/70">
               Already have an account?{" "}
-              <Link to="/login" className="text-cyan-300 font-semibold hover:text-cyan-200">
+              <Link
+                to="/login"
+                className="text-cyan-300 font-semibold hover:text-cyan-200"
+              >
                 Sign in
               </Link>
             </p>
