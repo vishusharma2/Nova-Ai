@@ -83,17 +83,20 @@ export default function ChatbotSignupPage() {
     setIsLoading(true);
 
     try {
-      const res = await fetch("http://35.154.90.250:4002/api/auth/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: formData.username,
-          email: formData.email,
-          password: formData.password,
-          useCase: formData.useCase,
-          experience: formData.experience,
-        }),
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/auth/signup`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: formData.username,
+            email: formData.email,
+            password: formData.password,
+            useCase: formData.useCase,
+            experience: formData.experience,
+          }),
+        }
+      );
 
       const data = await res.json();
 
