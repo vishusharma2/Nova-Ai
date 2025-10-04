@@ -31,7 +31,7 @@ connectDB();
 // --- Middleware ---
 const allowedOrigins = [
   "http://localhost:5173",
-  "http://13.51.167.112", // EC2 Public IP for frontend access
+  "http://16.16.217.71", // EC2 Public IP for frontend access
 ];
 
 app.use(
