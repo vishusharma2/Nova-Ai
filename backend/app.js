@@ -31,8 +31,8 @@ connectDB();
 // --- Middleware ---
 const allowedOrigins = [
   "http://localhost:5173",
-  "http://13.203.218.106:5173", // frontend dev
-  "http://13.203.218.106", // production or deployed build
+  "http://35.154.90.250:5173", // frontend dev
+  "http://35.154.90.250", // production or deployed build
 ];
 
 app.use(

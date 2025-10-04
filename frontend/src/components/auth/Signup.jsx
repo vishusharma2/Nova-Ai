@@ -83,7 +83,7 @@ export default function ChatbotSignupPage() {
     setIsLoading(true);
 
     try {
-      const res = await fetch("http://13.203.218.106:4002/api/auth/signup", {
+      const res = await fetch("http://35.154.90.250:4002/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
