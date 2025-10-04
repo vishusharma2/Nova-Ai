@@ -31,7 +31,8 @@ connectDB();
 // --- Middleware ---
 const allowedOrigins = [
   "http://localhost:5173",
-  "http://16.16.217.71", // EC2 Public IP for frontend access
+  "http://16.16.217.71:5173", // frontend dev
+  "http://16.16.217.71", // production or deployed build
 ];
 
 app.use(
@@ -60,8 +61,8 @@ app.use(notFound);
 app.use(errorHandler);
 
 // --- Server Startup ---
-app.listen(port, () => {
-  console.log(`🚀 Server running on port ${port}`);
+app.listen(port, "0.0.0.0", () => {
+  console.log(`🚀 Server running on http://0.0.0.0:${port}`);
 });
 
 export default app;
