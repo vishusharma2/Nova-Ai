@@ -44,6 +44,19 @@ class UserController {
       sendTokenResponse(user, 201, res, 'Account created successfully');
     } catch (err) {
       console.error('Signup error:', err);
+      
+      // Handle Mongoose validation errors
+      if (err.name === 'ValidationError') {
+        const messages = Object.values(err.errors).map(e => e.message);
+        return res.status(400).json({ success: false, message: messages.join('. ') });
+      }
+      
+      // Handle duplicate key error (e.g., email or username already exists)
+      if (err.code === 11000) {
+        const field = Object.keys(err.keyValue)[0];
+        return res.status(400).json({ success: false, message: `${field} already exists` });
+      }
+      
       res.status(500).json({ success: false, message: 'Internal server error' });
     }
   }

@@ -23,178 +23,134 @@ const isAskingAboutModelCreator = (text) => {
     lowerText.includes("created by") ||
     lowerText.includes("made by") ||
     lowerText.includes("developed by") ||
-    lowerText.includes("aapko kisne bnaya hai?")||
-    lowerText.includes("aapko kisne bnaya hai ?")||
-    lowerText.includes("aap ko bnane wala kon hai ?")||
+    lowerText.includes("aapko kisne bnaya hai?") ||
+    lowerText.includes("aapko kisne bnaya hai ?") ||
+    lowerText.includes("aap ko bnane wala kon hai ?") ||
     lowerText.includes("aap ko bnane wala kon hai?")
-
   );
 };
 
 // Predefined responses
 const predefinedResponses = {
-  "what is your name?": "I'm Chatboat, your friendly AI assistant 🛳️🤖",
+  "what is your name?": "I'm Nova AI, your intelligent assistant 🤖✨",
   "how are you?": "I'm doing great! Thanks for asking 😄",
   "what can you do?": "I can chat with you, answer questions, and help with tasks! 🧠✨",
 };
 
-// Helper function to stream text word by word
-const streamText = (res, text, delay = 50) => {
-  return new Promise((resolve) => {
-    const words = text.split(' ');
-    let currentIndex = 0;
+// ==================== CONVERSATION MANAGEMENT ====================
 
-    const sendNextWord = () => {
-      if (currentIndex < words.length) {
-        const word = words[currentIndex];
-        const isLastWord = currentIndex === words.length - 1;
-        
-        res.write(`data: ${JSON.stringify({
-          type: 'word',
-          word: word + (isLastWord ? '' : ' '),
-          isComplete: false,
-          wordIndex: currentIndex
-        })}\n\n`);
-        
-        currentIndex++;
-        setTimeout(sendNextWord, delay);
-      } else {
-        // Send completion signal
-        res.write(`data: ${JSON.stringify({
-          type: 'complete',
-          fullText: text,
-          isComplete: true
-        })}\n\n`);
-        resolve();
-      }
-    };
-
-    sendNextWord();
-  });
-};
-
-// Streaming endpoint for real-time responses
-export const MessageStream = async (req, res) => {
+// Get all conversations for logged-in user
+export const getConversations = async (req, res) => {
   try {
-    const { text, conversationId } = req.body;
-
-    if (!text || !text.trim()) {
-      return res.status(400).json({ 
-        success: false, 
-        error: "Message text cannot be empty" 
-      });
-    }
-
-    // Set up Server-Sent Events headers
-    res.writeHead(200, {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
-      'Connection': 'keep-alive',
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Headers': 'Content-Type',
+    const userId = req.user._id;
+    
+    const conversations = await Conversation.find({ userId })
+      .select("_id title createdAt updatedAt")
+      .sort({ updatedAt: -1 })
+      .limit(50);
+    
+    return res.status(200).json({
+      success: true,
+      conversations,
     });
-
-    console.log("📩 User input:", text);
-
-    let botResponse = "";
-    const lowerText = text.trim().toLowerCase();
-
-    // Send typing indicator
-    res.write(`data: ${JSON.stringify({
-      type: 'typing',
-      message: 'AI is thinking...'
-    })}\n\n`);
-
-    // Small delay to show typing indicator
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    // 1️⃣ First priority → "who created you" type questions
-    if (isAskingAboutModelCreator(text)) {
-      botResponse = "I was created by Nova AI team 🤖💻";
-      console.log("🎯 Model creator question detected");
-    }
-    // 2️⃣ Check predefined responses
-    else if (predefinedResponses[lowerText]) {
-      botResponse = predefinedResponses[lowerText];
-    }
-    // 3️⃣ Otherwise → call Gemini API
-    else {
-      try {
-        const result = await model.generateContent(text);
-        botResponse = result?.response?.text() || "Sorry, I couldn't generate a response.";
-      } catch (err) {
-        console.error("⚠️ Gemini API Error:", err);
-        botResponse = "⚠️ The AI service is busy right now. Please try again later.";
-      }
-    }
-
-    // Stream the response word by word
-    await streamText(res, botResponse, 80); // 80ms delay between words
-
-    // Save to database after streaming is complete
-    try {
-      let conversation;
-
-      if (conversationId) {
-        conversation = await Conversation.findById(conversationId);
-        if (!conversation) {
-          res.write(`data: ${JSON.stringify({
-            type: 'error',
-            message: 'Conversation not found'
-          })}\n\n`);
-          res.end();
-          return;
-        }
-
-        conversation.messages.push(
-          { sender: "user", text: text.trim() },
-          { sender: "bot", text: botResponse }
-        );
-      } else {
-        conversation = new Conversation({
-          messages: [
-            { sender: "user", text: text.trim() },
-            { sender: "bot", text: botResponse },
-          ],
-        });
-      }
-
-      await conversation.save();
-
-      // Send final success message with conversation ID
-      res.write(`data: ${JSON.stringify({
-        type: 'saved',
-        conversationId: conversation._id,
-        message: 'Conversation saved successfully'
-      })}\n\n`);
-
-    } catch (dbError) {
-      console.error("❌ Database Error:", dbError);
-      res.write(`data: ${JSON.stringify({
-        type: 'warning',
-        message: 'Response generated but not saved to database'
-      })}\n\n`);
-    }
-
-    res.end();
-
   } catch (error) {
-    console.error("❌ Error in Streaming Message Controller:", error);
-    
-    res.write(`data: ${JSON.stringify({
-      type: 'error',
-      message: 'Internal Server Error',
-      details: error.message
-    })}\n\n`);
-    
-    res.end();
+    console.error("❌ Error fetching conversations:", error);
+    return res.status(500).json({
+      success: false,
+      error: "Failed to fetch conversations",
+    });
   }
 };
 
-// Regular non-streaming endpoint (for backward compatibility)
+// Get a specific conversation with messages
+export const getConversation = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { id } = req.params;
+    
+    const conversation = await Conversation.findOne({ _id: id, userId });
+    
+    if (!conversation) {
+      return res.status(404).json({
+        success: false,
+        error: "Conversation not found",
+      });
+    }
+    
+    return res.status(200).json({
+      success: true,
+      conversation,
+    });
+  } catch (error) {
+    console.error("❌ Error fetching conversation:", error);
+    return res.status(500).json({
+      success: false,
+      error: "Failed to fetch conversation",
+    });
+  }
+};
+
+// Create a new conversation
+export const createConversation = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    
+    const conversation = new Conversation({
+      userId,
+      title: "New Chat",
+      messages: [],
+    });
+    
+    await conversation.save();
+    
+    return res.status(201).json({
+      success: true,
+      conversationId: conversation._id,
+      conversation,
+    });
+  } catch (error) {
+    console.error("❌ Error creating conversation:", error);
+    return res.status(500).json({
+      success: false,
+      error: "Failed to create conversation",
+    });
+  }
+};
+
+// Delete a conversation
+export const deleteConversation = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { id } = req.params;
+    
+    const result = await Conversation.findOneAndDelete({ _id: id, userId });
+    
+    if (!result) {
+      return res.status(404).json({
+        success: false,
+        error: "Conversation not found",
+      });
+    }
+    
+    return res.status(200).json({
+      success: true,
+      message: "Conversation deleted successfully",
+    });
+  } catch (error) {
+    console.error("❌ Error deleting conversation:", error);
+    return res.status(500).json({
+      success: false,
+      error: "Failed to delete conversation",
+    });
+  }
+};
+
+// ==================== MESSAGE HANDLER ====================
+
 export const Message = async (req, res) => {
   try {
     const { text, conversationId } = req.body;
+    const userId = req.user._id;
 
     if (!text || !text.trim()) {
       return res
@@ -232,8 +188,8 @@ export const Message = async (req, res) => {
     let conversation;
 
     if (conversationId) {
-      // Update existing conversation
-      conversation = await Conversation.findById(conversationId);
+      // Update existing conversation (ensure it belongs to user)
+      conversation = await Conversation.findOne({ _id: conversationId, userId });
       if (!conversation) {
         return res
           .status(404)
@@ -245,13 +201,16 @@ export const Message = async (req, res) => {
         { sender: "bot", text: botResponse }
       );
     } else {
-      // Create new conversation
+      // Create new conversation for user
       conversation = new Conversation({
+        userId,
         messages: [
           { sender: "user", text: text.trim() },
           { sender: "bot", text: botResponse },
         ],
       });
+      // Auto-generate title from first message
+      conversation.title = text.trim().slice(0, 50) + (text.trim().length > 50 ? "..." : "");
     }
 
     await conversation.save();
@@ -261,6 +220,7 @@ export const Message = async (req, res) => {
       success: true,
       conversationId: conversation._id,
       botMessage: botResponse,
+      title: conversation.title,
     });
   } catch (error) {
     console.error("❌ Error in Message Controller:", error);

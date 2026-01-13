@@ -1,13 +1,56 @@
-const ChatArea = ({ messages, loading, messagesEndRef }) => {
+const ChatArea = ({ messages, loading, messagesEndRef, setInput, sidebarOpen }) => {
+  const suggestions = [
+    { emoji: "💡", text: "Explain quantum computing" },
+    { emoji: "✍️", text: "Write a poem" },
+    { emoji: "🧠", text: "Help me brainstorm" },
+    { emoji: "📚", text: "Summarize a topic" },
+  ];
+
+  const handleSuggestionClick = (text) => {
+    if (setInput) {
+      setInput(text);
+    }
+  };
+
   return (
-    <main className="flex-1 overflow-y-auto pt-20 pb-24">
-      <div className="w-full max-w-4xl mx-auto px-4 flex flex-col space-y-4">
+    <main className="flex-1 overflow-y-auto pt-24 pb-28">
+      {/* Gradient background overlay */}
+      <div className="fixed inset-0 -z-10 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse delay-1000" />
+      </div>
+      
+      <div className="w-full max-w-4xl mx-auto px-6 flex flex-col space-y-6">
         {messages.length === 0 && (
-          <div className="flex flex-col items-center justify-center space-y-4 mt-20">
-            <div className="text-5xl">👋</div>
-            <div className="text-center">
-              <h2 className="text-2xl font-bold mb-2">Welcome to Nova Ai</h2>
-              <p className="text-gray-400">Ask me anything! I'm here to help.</p>
+          <div className="flex flex-col items-center justify-center space-y-6 mt-24">
+            {/* Animated logo container */}
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-full blur-2xl opacity-30 animate-pulse" />
+              <div className="relative w-24 h-24 bg-gradient-to-br from-slate-800 to-slate-900 rounded-full flex items-center justify-center border border-white/10 shadow-2xl">
+                <span className="text-5xl">👋</span>
+              </div>
+            </div>
+            
+            <div className="text-center space-y-3">
+              <h2 className="text-3xl font-bold bg-gradient-to-r from-white via-cyan-200 to-purple-200 bg-clip-text text-transparent">
+                Welcome to Nova AI
+              </h2>
+              <p className="text-gray-400 text-lg max-w-md">
+                Your intelligent AI companion. Ask me anything and let's explore ideas together!
+              </p>
+            </div>
+            
+            {/* Suggestion chips */}
+            <div className="flex flex-wrap justify-center gap-3 mt-6 max-w-xl">
+              {suggestions.map((suggestion, idx) => (
+                <button 
+                  key={idx}
+                  onClick={() => handleSuggestionClick(suggestion.text)}
+                  className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-cyan-500/50 rounded-full text-sm text-gray-300 hover:text-white transition-all duration-300 backdrop-blur-sm hover:scale-105 active:scale-95 cursor-pointer"
+                >
+                  {suggestion.emoji} {suggestion.text}
+                </button>
+              ))}
             </div>
           </div>
         )}
@@ -17,30 +60,57 @@ const ChatArea = ({ messages, loading, messagesEndRef }) => {
             key={idx}
             className={`flex ${
               msg.sender === "user" ? "justify-end" : "justify-start"
-            }`}
+            } animate-fadeIn`}
           >
             <div
-              className={`px-4 py-3 rounded-2xl max-w-[75%] relative ${
+              className={`relative group max-w-[80%] ${
                 msg.sender === "user"
-                  ? "bg-blue-700 text-white rounded-br-none after:absolute after:right-0 after:bottom-0 after:border-8 after:border-transparent after:border-r-blue-700"
-                  : "bg-gray-800 text-gray-100"
-              } ${msg.isError ? "bg-red-500/50" : ""}`}
+                  ? "ml-12"
+                  : "mr-12"
+              }`}
             >
-              <div className="leading-relaxed whitespace-pre-wrap break-words">
-                {msg.text}
+              {/* Avatar */}
+              <div className={`absolute top-0 ${msg.sender === "user" ? "-right-10" : "-left-10"} w-8 h-8 rounded-full flex items-center justify-center text-sm ${
+                msg.sender === "user" 
+                  ? "bg-gradient-to-br from-cyan-500 to-blue-600" 
+                  : "bg-gradient-to-br from-purple-500 to-pink-600"
+              }`}>
+                {msg.sender === "user" ? "👤" : "🤖"}
+              </div>
+              
+              {/* Message bubble */}
+              <div
+                className={`px-5 py-4 rounded-2xl shadow-lg backdrop-blur-sm ${
+                  msg.sender === "user"
+                    ? "bg-gradient-to-br from-cyan-600/90 to-blue-700/90 text-white rounded-tr-sm border border-cyan-500/30"
+                    : "bg-white/5 text-gray-100 rounded-tl-sm border border-white/10"
+                } ${msg.isError ? "bg-red-500/30 border-red-500/50" : ""}`}
+              >
+                {msg.sender === "bot" && (
+                  <div className="text-xs text-purple-400 font-medium mb-2 flex items-center gap-1">
+                    <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                    Nova AI
+                  </div>
+                )}
+                <div className="leading-relaxed whitespace-pre-wrap break-words text-[15px]">
+                  {msg.text}
+                </div>
               </div>
             </div>
           </div>
         ))}
 
         {loading && (
-          <div className="flex justify-start">
-            <div className="bg-gray-800 text-gray-300 px-4 py-3 rounded-2xl">
-              <div className="text-xs text-gray-400 mb-1">Nova Ai</div>
-              <div className="flex items-center space-x-1">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce"></div>
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce delay-100"></div>
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce delay-200"></div>
+          <div className="flex justify-start animate-fadeIn">
+            <div className="ml-2 bg-white/5 backdrop-blur-sm border border-white/10 text-gray-300 px-5 py-4 rounded-2xl rounded-tl-sm shadow-lg">
+              <div className="text-xs text-purple-400 font-medium mb-2 flex items-center gap-1">
+                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                Nova AI is thinking...
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-2.5 h-2.5 bg-gradient-to-r from-cyan-400 to-purple-400 rounded-full animate-bounce" />
+                <div className="w-2.5 h-2.5 bg-gradient-to-r from-cyan-400 to-purple-400 rounded-full animate-bounce [animation-delay:150ms]" />
+                <div className="w-2.5 h-2.5 bg-gradient-to-r from-cyan-400 to-purple-400 rounded-full animate-bounce [animation-delay:300ms]" />
               </div>
             </div>
           </div>
