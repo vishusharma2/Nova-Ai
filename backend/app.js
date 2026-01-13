@@ -33,6 +33,7 @@ const allowedOrigins = [
   "http://localhost:5173",
   "http://35.154.90.250:5173", // frontend dev
   "http://35.154.90.250", // production or deployed build
+  "https://nova-ai-nine.vercel.app", // Vercel production
 ];
 
 app.use(
