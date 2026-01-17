@@ -72,7 +72,10 @@ const userSchema = new mongoose.Schema({
   },
   registrationSource: { type: String, enum: ['web', 'mobile', 'api'], default: 'web' },
   ipAddress: String,
-  userAgent: String
+  userAgent: String,
+  // Password reset OTP fields
+  resetPasswordOtp: String,
+  resetPasswordOtpExpires: Date
 }, {
   timestamps: true,
   versionKey: false

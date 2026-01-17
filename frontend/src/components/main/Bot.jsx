@@ -11,11 +11,13 @@ function Bot() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
   const [conversationId, setConversationId] = useState(null);
   const [conversations, setConversations] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [historyLoading, setHistoryLoading] = useState(true);
   const messagesEndRef = useRef(null);
+  const typingIntervalRef = useRef(null);
 
   // Get auth token
   const getAuthHeaders = () => {
@@ -60,6 +62,7 @@ function Bot() {
         setMessages(res.data.conversation.messages.map(m => ({
           sender: m.sender,
           text: m.text,
+          imageUrl: m.imageUrl || null,
         })));
       }
     } catch (err) {
@@ -92,23 +95,40 @@ function Bot() {
   };
 
   // Typing effect for bot response (letter by letter)
-  const typeBotMessage = (fullText) => {
+  const typeBotMessage = (fullText, imageUrl = null) => {
     let currentText = "";
     let i = 0;
+    setIsTyping(true);
 
-    const interval = setInterval(() => {
+    // Clear any existing interval
+    if (typingIntervalRef.current) {
+      clearInterval(typingIntervalRef.current);
+    }
+
+    typingIntervalRef.current = setInterval(() => {
       if (i < fullText.length) {
         currentText += fullText[i];
         setMessages((prev) => {
           let updated = [...prev];
-          updated[updated.length - 1] = { sender: "bot", text: currentText };
+          updated[updated.length - 1] = { sender: "bot", text: currentText, imageUrl };
           return updated;
         });
         i++;
       } else {
-        clearInterval(interval);
+        clearInterval(typingIntervalRef.current);
+        typingIntervalRef.current = null;
+        setIsTyping(false);
       }
     }, 30);
+  };
+
+  // Stop typing effect
+  const handleStopTyping = () => {
+    if (typingIntervalRef.current) {
+      clearInterval(typingIntervalRef.current);
+      typingIntervalRef.current = null;
+      setIsTyping(false);
+    }
   };
 
   const handleSendMessage = async () => {
@@ -126,11 +146,12 @@ function Bot() {
       );
 
       if (res.status === 200 && res.data?.botMessage) {
-        // Add placeholder for bot message
-        setMessages((prev) => [...prev, { sender: "bot", text: "" }]);
+        // Add placeholder for bot message (with imageUrl if present)
+        const imageUrl = res.data.imageUrl || null;
+        setMessages((prev) => [...prev, { sender: "bot", text: "", imageUrl }]);
 
         // Start typing effect
-        typeBotMessage(res.data.botMessage);
+        typeBotMessage(res.data.botMessage, imageUrl);
 
         // Save conversationId if new
         if (!conversationId && res.data.conversationId) {
@@ -197,6 +218,8 @@ function Bot() {
           handleKeyPress={handleKeyPress}
           handleSendMessage={handleSendMessage}
           loading={loading}
+          isTyping={isTyping}
+          onStopTyping={handleStopTyping}
           sidebarOpen={sidebarOpen}
         />
       </div>

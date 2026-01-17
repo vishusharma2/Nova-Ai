@@ -185,9 +185,9 @@ export default function ChatbotLoginPage() {
 
             {/* Forgot Password */}
             <div className="flex justify-end">
-              <a href="#" className="text-sm text-cyan-400 hover:text-cyan-300 transition-colors">
+              <Link to="/forgot-password" className="text-sm text-cyan-400 hover:text-cyan-300 transition-colors">
                 Forgot password?
-              </a>
+              </Link>
             </div>
 
             {/* Submit Button */}

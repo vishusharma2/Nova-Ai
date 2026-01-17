@@ -1,5 +1,6 @@
 import Conversation from "../models/conversation.model.js";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { generateImage, isImageGenerationRequest, extractImagePrompt } from "../utils/imageService.js";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -161,10 +162,33 @@ export const Message = async (req, res) => {
     console.log("📩 User input:", text);
 
     let botResponse = "";
+    let imageUrl = null;
     const lowerText = text.trim().toLowerCase();
 
-    // 1️⃣ First priority → "who created you" type questions
-    if (isAskingAboutModelCreator(text)) {
+    // 0️⃣ Check for image generation request FIRST
+    if (isImageGenerationRequest(text)) {
+      console.log("🎨 Image generation request detected");
+      const imagePrompt = extractImagePrompt(text);
+      console.log("🎨 Extracted prompt:", imagePrompt);
+      
+      try {
+        const imageResult = await generateImage(imagePrompt);
+        
+        if (imageResult.success) {
+          botResponse = `Here's your generated image! 🎨✨`;
+          imageUrl = `data:${imageResult.mimeType};base64,${imageResult.imageData}`;
+          console.log("✅ Image generated successfully");
+        } else {
+          botResponse = `Sorry, I couldn't generate that image. ${imageResult.error || "Please try a different prompt."}`;
+          console.log("❌ Image generation failed:", imageResult.error);
+        }
+      } catch (imageErr) {
+        console.error("❌ Image generation exception:", imageErr);
+        botResponse = `Sorry, there was an error generating the image: ${imageErr.message}`;
+      }
+    }
+    // 1️⃣ "who created you" type questions
+    else if (isAskingAboutModelCreator(text)) {
       botResponse = "I was created by Nova AI team 🤖💻";
       console.log("🎯 Model creator question detected");
     }
@@ -187,6 +211,14 @@ export const Message = async (req, res) => {
 
     let conversation;
 
+    // Build message objects
+    const userMessage = { sender: "user", text: text.trim() };
+    const botMessage = { 
+      sender: "bot", 
+      text: botResponse,
+      ...(imageUrl && { imageUrl }) // Include imageUrl if present
+    };
+
     if (conversationId) {
       // Update existing conversation (ensure it belongs to user)
       conversation = await Conversation.findOne({ _id: conversationId, userId });
@@ -196,18 +228,12 @@ export const Message = async (req, res) => {
           .json({ success: false, error: "Conversation not found" });
       }
 
-      conversation.messages.push(
-        { sender: "user", text: text.trim() },
-        { sender: "bot", text: botResponse }
-      );
+      conversation.messages.push(userMessage, botMessage);
     } else {
       // Create new conversation for user
       conversation = new Conversation({
         userId,
-        messages: [
-          { sender: "user", text: text.trim() },
-          { sender: "bot", text: botResponse },
-        ],
+        messages: [userMessage, botMessage],
       });
       // Auto-generate title from first message
       conversation.title = text.trim().slice(0, 50) + (text.trim().length > 50 ? "..." : "");
@@ -215,11 +241,12 @@ export const Message = async (req, res) => {
 
     await conversation.save();
 
-    // Send back latest message
+    // Send back latest message with optional image
     return res.status(200).json({
       success: true,
       conversationId: conversation._id,
       botMessage: botResponse,
+      imageUrl: imageUrl, // Will be null if no image
       title: conversation.title,
     });
   } catch (error) {

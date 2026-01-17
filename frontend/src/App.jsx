@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from "r
 import Bot from "./components/main/Bot";
 import SignupPage from "./components/auth/Signup";
 import LoginPage from "./components/auth/Login";
+import ForgotPassword from "./components/auth/ForgotPassword";
 
 // Token key constant
 const TOKEN_KEY = "chatbotToken";
@@ -60,6 +61,14 @@ const App = () => {
           element={
             <PublicRoute>
               <SignupPage />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/forgot-password"
+          element={
+            <PublicRoute>
+              <ForgotPassword />
             </PublicRoute>
           }
         />

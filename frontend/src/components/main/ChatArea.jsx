@@ -95,6 +95,30 @@ const ChatArea = ({ messages, loading, messagesEndRef, setInput, sidebarOpen }) 
                 <div className="leading-relaxed whitespace-pre-wrap break-words text-[15px]">
                   {msg.text}
                 </div>
+                
+                {/* Display image if present */}
+                {msg.imageUrl && (
+                  <div className="mt-4 relative group/img">
+                    <img 
+                      src={msg.imageUrl} 
+                      alt="AI Generated" 
+                      className="rounded-xl max-w-full h-auto shadow-lg border border-white/10 hover:scale-[1.02] transition-transform cursor-pointer"
+                      onClick={() => window.open(msg.imageUrl, '_blank')}
+                    />
+                    {/* Download button */}
+                    <a 
+                      href={msg.imageUrl}
+                      download={`nova-ai-image-${Date.now()}.png`}
+                      className="absolute bottom-3 right-3 bg-black/70 hover:bg-black/90 text-white px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-1.5 opacity-0 group-hover/img:opacity-100 transition-opacity backdrop-blur-sm border border-white/20"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                      </svg>
+                      Download
+                    </a>
+                  </div>
+                )}
               </div>
             </div>
           </div>

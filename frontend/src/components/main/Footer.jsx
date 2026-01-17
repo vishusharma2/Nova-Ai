@@ -1,7 +1,7 @@
-import { FaPaperPlane } from "react-icons/fa";
+import { FaPaperPlane, FaStop } from "react-icons/fa";
 import { HiSparkles } from "react-icons/hi2";
 
-const Footer = ({ input, setInput, handleKeyPress, handleSendMessage, loading, sidebarOpen }) => {
+const Footer = ({ input, setInput, handleKeyPress, handleSendMessage, loading, isTyping, onStopTyping, sidebarOpen }) => {
   return (
     <footer className={`fixed bottom-0 left-0 right-0 bg-gradient-to-t from-slate-950 via-slate-950/95 to-transparent pt-8 pb-4 z-10 transition-all duration-300 ${sidebarOpen ? "lg:pl-72" : ""}`}>
       <div className="max-w-4xl mx-auto px-4">
@@ -25,6 +25,7 @@ const Footer = ({ input, setInput, handleKeyPress, handleSendMessage, loading, s
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyPress}
+              disabled={isTyping}
             />
             
             {/* Character count */}
@@ -32,28 +33,40 @@ const Footer = ({ input, setInput, handleKeyPress, handleSendMessage, loading, s
               <span className="text-xs text-gray-500 mr-3">{input.length}/2000</span>
             )}
             
-            <button
-              onClick={handleSendMessage}
-              disabled={loading || !input.trim()}
-              aria-label="Send message"
-              className={`relative px-5 py-2.5 rounded-xl flex items-center gap-2 font-medium text-sm transition-all duration-300 ${
-                loading || !input.trim()
-                  ? "bg-gray-800/50 text-gray-500 cursor-not-allowed"
-                  : "bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:shadow-lg hover:shadow-cyan-500/25 hover:scale-105 active:scale-95"
-              }`}
-            >
-              {loading ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  <span>Sending</span>
-                </>
-              ) : (
-                <>
-                  <span>Send</span>
-                  <FaPaperPlane className="w-3.5 h-3.5" />
-                </>
-              )}
-            </button>
+            {/* Stop button - shows when AI is typing */}
+            {isTyping ? (
+              <button
+                onClick={onStopTyping}
+                aria-label="Stop response"
+                className="relative px-5 py-2.5 rounded-xl flex items-center gap-2 font-medium text-sm transition-all duration-300 bg-gradient-to-r from-red-500 to-orange-500 text-white hover:shadow-lg hover:shadow-red-500/25 hover:scale-105 active:scale-95"
+              >
+                <FaStop className="w-3 h-3" />
+                <span>Stop</span>
+              </button>
+            ) : (
+              <button
+                onClick={handleSendMessage}
+                disabled={loading || !input.trim()}
+                aria-label="Send message"
+                className={`relative px-5 py-2.5 rounded-xl flex items-center gap-2 font-medium text-sm transition-all duration-300 ${
+                  loading || !input.trim()
+                    ? "bg-gray-800/50 text-gray-500 cursor-not-allowed"
+                    : "bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:shadow-lg hover:shadow-cyan-500/25 hover:scale-105 active:scale-95"
+                }`}
+              >
+                {loading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>Sending</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Send</span>
+                    <FaPaperPlane className="w-3.5 h-3.5" />
+                  </>
+                )}
+              </button>
+            )}
           </div>
         </div>
         
