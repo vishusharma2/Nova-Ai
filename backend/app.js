@@ -36,12 +36,23 @@ const allowedOrigins = [
   "https://nova-ai-nine.vercel.app", // Vercel production
 ];
 
+// Pattern to match Vercel preview deployments
+const vercelPreviewPattern = /^https:\/\/nova-.*\.vercel\.app$/;
+
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
+      // Allow requests with no origin (like mobile apps or curl)
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+      
+      // Check if origin is in allowed list or matches Vercel preview pattern
+      if (allowedOrigins.includes(origin) || vercelPreviewPattern.test(origin)) {
         callback(null, true);
       } else {
+        console.log("CORS blocked origin:", origin);
         callback(new Error("Not allowed by CORS"));
       }
     },
