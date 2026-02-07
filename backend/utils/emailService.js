@@ -1,29 +1,12 @@
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
-// Create reusable transporter
-const createTransporter = () => {
-  // Sanitize environment variables (remove surrounding quotes if present)
-  const user = process.env.EMAIL_USER ? process.env.EMAIL_USER.replace(/"/g, '').trim() : '';
-  const pass = process.env.EMAIL_PASS ? process.env.EMAIL_PASS.replace(/"/g, '').trim() : '';
-  
-  console.log('Creating email transporter with user:', user);
-  
-  return nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true,
-    auth: {
-      user: user,
-      pass: pass
-    },
-    // Cloud provider fixes
-    connectionTimeout: 10000, // 10 seconds
-    socketTimeout: 15000, // 15 seconds
-    greetingTimeout: 10000,
-    dnsTimeout: 5000,
-    // Force IPv4 to avoid IPv6 issues on cloud providers
-    family: 4
-  });
+// Initialize Resend client
+const getResendClient = () => {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    throw new Error('RESEND_API_KEY environment variable is not set');
+  }
+  return new Resend(apiKey);
 };
 
 /**
@@ -35,7 +18,7 @@ export const generateOtp = () => {
 };
 
 /**
- * Send OTP email for password reset
+ * Send OTP email for password reset using Resend
  * @param {string} email - Recipient email
  * @param {string} otp - 6-digit OTP
  * @param {string} username - User's username
@@ -43,11 +26,14 @@ export const generateOtp = () => {
  */
 export const sendOtpEmail = async (email, otp, username = 'User') => {
   try {
-    const transporter = createTransporter();
+    const resend = getResendClient();
     
-    const mailOptions = {
-      from: process.env.EMAIL_FROM || 'Nova AI <noreply@novaai.com>',
-      to: email,
+    // Use Resend's test domain for development, or your verified domain for production
+    const fromEmail = process.env.EMAIL_FROM || 'Nova AI <onboarding@resend.dev>';
+    
+    const { data, error } = await resend.emails.send({
+      from: fromEmail,
+      to: [email],
       subject: '🔐 Nova AI - Password Reset OTP',
       html: `
         <!DOCTYPE html>
@@ -104,14 +90,17 @@ export const sendOtpEmail = async (email, otp, username = 'User') => {
         </body>
         </html>
       `
-    };
+    });
 
-    await transporter.sendMail(mailOptions);
-    console.log(`OTP email sent successfully to ${email}`);
+    if (error) {
+      console.error('Resend error:', error);
+      throw new Error(error.message || 'Failed to send email');
+    }
+
+    console.log(`OTP email sent successfully to ${email}, ID: ${data?.id}`);
     return true;
   } catch (error) {
     console.error('Error sending OTP email:', error.message);
-    console.error('Full error:', error);
     throw new Error('Failed to send OTP email: ' + error.message);
   }
 };
