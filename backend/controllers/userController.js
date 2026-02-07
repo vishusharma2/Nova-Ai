@@ -90,10 +90,15 @@ class UserController {
 
   // Forgot Password - Step 1: Send OTP to email
   static async forgotPassword(req, res) {
+    console.log('=== FORGOT PASSWORD REQUEST RECEIVED ===');
+    console.log('Body:', req.body);
+    console.log('RESEND_API_KEY set:', !!process.env.RESEND_API_KEY);
+    
     try {
       const { email } = req.body;
       
       if (!email) {
+        console.log('Error: No email provided');
         return res.status(400).json({ success: false, message: 'Please provide an email address' });
       }
 
