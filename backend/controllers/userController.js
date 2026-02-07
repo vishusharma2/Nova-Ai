@@ -118,7 +118,12 @@ class UserController {
       });
     } catch (err) {
       console.error('Forgot password error:', err);
-      res.status(500).json({ success: false, message: 'Failed to send OTP. Please try again.' });
+      res.status(500).json({ 
+        success: false, 
+        message: 'Failed to send OTP. Please try again.',
+        error: err.message, // Include detailed error for debugging
+        stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+      });
     }
   }
 
