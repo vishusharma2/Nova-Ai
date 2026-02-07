@@ -10,12 +10,19 @@ const createTransporter = () => {
   
   return nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: 465, // Use 465 for SSL, more reliable on cloud servers
-    secure: true, // true for 465
+    port: 465,
+    secure: true,
     auth: {
       user: user,
       pass: pass
-    }
+    },
+    // Cloud provider fixes
+    connectionTimeout: 10000, // 10 seconds
+    socketTimeout: 15000, // 15 seconds
+    greetingTimeout: 10000,
+    dnsTimeout: 5000,
+    // Force IPv4 to avoid IPv6 issues on cloud providers
+    family: 4
   });
 };
 
