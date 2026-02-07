@@ -2,23 +2,19 @@ import nodemailer from 'nodemailer';
 
 // Create reusable transporter
 const createTransporter = () => {
-  console.log('Creating email transporter with:', {
-    host: process.env.EMAIL_HOST,
-    port: process.env.EMAIL_PORT,
-    user: process.env.EMAIL_USER,
-    from: process.env.EMAIL_FROM
-  });
+  // Sanitize environment variables (remove surrounding quotes if present)
+  const user = process.env.EMAIL_USER ? process.env.EMAIL_USER.replace(/"/g, '').trim() : '';
+  const pass = process.env.EMAIL_PASS ? process.env.EMAIL_PASS.replace(/"/g, '').trim() : '';
+  
+  console.log('Creating email transporter with user:', user);
   
   return nodemailer.createTransport({
-    host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.EMAIL_PORT) || 587,
-    secure: false, // true for 465, false for other ports
+    host: 'smtp.gmail.com',
+    port: 465, // Use 465 for SSL, more reliable on cloud servers
+    secure: true, // true for 465
     auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS
-    },
-    tls: {
-      rejectUnauthorized: false
+      user: user,
+      pass: pass
     }
   });
 };
